@@ -514,3 +514,262 @@ Outputted Plot:
 
 --------------------------------------------------------------------------------
 ```
+### Co-Occurrence Plot Analysis
+
+Now I will put together all the parts I have written! I will compute the co-occurrence matrix with fixed window of 4 (the default window size), over the Reuters "crude" (oil) corpus. Then I will use TruncatedSVD to compute 2-dimensional embeddings of each word. TruncatedSVD returns U\*S, so I need to normalize the returned vectors, so that all the vectors will appear around the unit circle (therefore closeness is directional closeness). **Note**: The line of code below that does the normalizing uses the NumPy concept of *broadcasting*. If you don't know about broadcasting, check out
+[Computation on Arrays: Broadcasting by Jake VanderPlas](https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html).
+
+Run the below cell to produce the plot. It'll probably take a few seconds to run.
+
+```python
+# -----------------------------
+# Run This Cell to Produce Your Plot
+# ------------------------------
+reuters_corpus = read_corpus()
+M_co_occurrence, word2ind_co_occurrence = compute_co_occurrence_matrix(reuters_corpus)
+M_reduced_co_occurrence = reduce_to_k_dim(M_co_occurrence, k=2)
+
+# Rescale (normalize) the rows to make them each of unit-length
+M_lengths = np.linalg.norm(M_reduced_co_occurrence, axis=1)
+M_normalized = M_reduced_co_occurrence / M_lengths[:, np.newaxis] # broadcasting
+
+words = ['barrels', 'bpd', 'ecuador', 'energy', 'industry', 'kuwait', 'oil', 'output', 'petroleum', 'iraq']
+
+plot_embeddings(M_normalized, word2ind_co_occurrence, words)
+```
+```python
+Running Truncated SVD over 8185 words...
+(8185, 2)
+Done.
+[1252, 1454, 2729, 2840, 3961, 4285, 5165, 5298, 5517, 7862]
+```
+What clusters together in 2-dimensional embedding space? What doesn't cluster together that you might think should have?  **Note:** "bpd" stands for "barrels per day" and is a commonly used abbreviation in crude oil topic articles.
+
+#### <font color="red">Write your answer here.</font>
+
+## Prediction-Based Word Vectors
+
+More recently prediction-based word vectors have demonstrated better performance, such as word2vec and GloVe (which also utilizes the benefit of counts). Here, I will explore the embeddings produced by GloVe. Please revisit documentations for more details on the word2vec and GloVe algorithms. If you're feeling adventurous, challenge yourself and try reading [GloVe's original paper](https://nlp.stanford.edu/pubs/glove.pdf).
+
+I am going to run the following cells to load the GloVe vectors into memory. **Note**: If this is your first time to run these cells, i.e. download the embedding model, it will take a couple minutes to run. If you've run these cells before, rerunning them will load the model without redownloading it, which will take about 1 to 2 minutes.
+
+```python
+def load_word2vec():
+    """ Load Word2Vec Vectors
+        Return:
+            wv_from_bin: All 3 million embeddings, each lengh 300
+    """
+    import gensim.downloader as api
+    wv_from_bin = api.load("word2vec-google-news-300")
+    #model.wv.index_to_key,random.choice(model.wv.index_to_key)
+    #vocab = list(wv_from_bin.vocab.keys())
+    vocab = list(wv_from_bin.index_to_key)
+    #vocab = len(wv_from_bin.wv)
+    print("Loaded vocab size %i" % len(vocab))
+    return wv_from_bin
+```
+```python
+# -----------------------------------
+# Run Cell to Load Word Vectors
+# Note: This will take a couple minutes
+# -----------------------------------
+#wv_from_bin = load_embedding_model()
+wv_from_bin = load_word2vec()
+```
+```python
+Loaded vocab size 3000000
+```
+Note: If you are receiving a "reset by peer" error, rerun the cell to restart the download.
+### Reducing dimensionality of Word Embeddings
+Let's directly compare the GloVe embeddings to those of the co-occurrence matrix. In order to avoid running out of memory, I am going to work with a sample of 10000 GloVe vectors instead.
+Run the following cells to:
+
+1. Put 10000 Glove vectors into a matrix M
+2. Run `reduce_to_k_dim` (your Truncated SVD function) to reduce the vectors from 200-dimensional to 2-dimensional.
+
+```python
+def get_matrix_of_vectors(wv_from_bin, required_words=['barrels', 'bpd', 'ecuador', 'energy', 'industry', 'kuwait', 'oil', 'output', 'petroleum', 'iraq']):
+    """ Put the GloVe vectors into a matrix M.
+        Param:
+            wv_from_bin: KeyedVectors object; the 400000 GloVe vectors loaded from file
+        Return:
+            M: numpy matrix shape (num words, 200) containing the vectors
+            word2ind: dictionary mapping each word to its row number in M
+    """
+    import random
+    words = list(wv_from_bin.index_to_key)
+    print("Shuffling words ...")
+    random.seed(224)
+    random.shuffle(words)
+    words = words[:10000]
+    print("Putting %i words into word2ind and matrix M..." % len(words))
+    word2ind = {}
+    M = []
+    curInd = 0
+    for w in words:
+        try:
+            M.append(wv_from_bin.word_vec(w))
+            word2ind[w] = curInd
+            curInd += 1
+        except KeyError:
+            continue
+    for w in required_words:
+        if w in words:
+            continue
+        try:
+            M.append(wv_from_bin.word_vec(w))
+            word2ind[w] = curInd
+            curInd += 1
+        except KeyError:
+            continue
+    M = np.stack(M)
+    print("Done.")
+    return M, word2ind
+```
+```python
+# -----------------------------------------------------------------
+# Run Cell to Reduce 200-Dimensional Word Embeddings to k Dimensions
+# Note: This should be quick to run
+# -----------------------------------------------------------------
+M, word2ind = get_matrix_of_vectors(wv_from_bin)
+M_reduced = reduce_to_k_dim(M, k=2)
+
+# Rescale (normalize) the rows to make them each of unit-length
+M_lengths = np.linalg.norm(M_reduced, axis=1)
+M_reduced_normalized = M_reduced / M_lengths[:, np.newaxis] # broadcasting
+```
+```python
+Shuffling words ...
+Putting 10000 words into word2ind and matrix M...
+Done.
+Running Truncated SVD over 10010 words...
+Done.
+<ipython-input-15-df2087b189c7>:21: DeprecationWarning: Call to deprecated `word_vec` (Use get_vector instead).
+  M.append(wv_from_bin.word_vec(w))
+<ipython-input-15-df2087b189c7>:30: DeprecationWarning: Call to deprecated `word_vec` (Use get_vector instead).
+  M.append(wv_from_bin.word_vec(w))
+```  
+**Note: If you are receiving out of memory issues on your local machine, try closing other applications to free more memory on your device. You may want to try restarting your machine so that you can free up extra memory. Then immediately run the jupyter notebook and see if you can load the word vectors properly. If you still have problems with loading the embeddings onto your local machine after this, please visit Stack overflow website for relevant articles.**
+
+### GloVe Plot Analysis
+
+Run the cell below to plot the 2D GloVe embeddings for `['barrels', 'bpd', 'ecuador', 'energy', 'industry', 'kuwait', 'oil', 'output', 'petroleum', 'iraq']`.
+```python
+words = ['barrels', 'bpd', 'ecuador', 'energy', 'industry', 'kuwait', 'oil', 'output', 'petroleum', 'iraq']
+plot_embeddings(M_reduced_normalized, word2ind, words)
+```
+```python
+[10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009]
+
+```
+What clusters together in 2-dimensional embedding space? What doesn't cluster together that you think should have? How is the plot different from the one generated earlier from the co-occurrence matrix? What is a possible cause for the difference?
+
+### Cosine Similarity
+Now that I have word vectors, I need to find a way to quantify the similarity between individual words, according to these vectors. One such metric is cosine-similarity. I will be using this to find words that are "close" and "far" from one another.
+
+I am thinkinng of n-dimensional vectors as points in n-dimensional space. If I take this perspective [L1](http://mathworld.wolfram.com/L1-Norm.html) and [L2](http://mathworld.wolfram.com/L2-Norm.html) Distances help quantify the amount of space "we must travel" to get between these two points. Another approach is to examine the angle between two vectors.
+
+
+Instead of computing the actual angle, we can leave the similarity in terms of $similarity = cos(\Theta)$. Formally the [Cosine Similarity](https://en.wikipedia.org/wiki/Cosine_similarity) $s$ between two vectors $p$ and $q$ is defined as:
+
+$$s = \frac{p \cdot q}{||p|| ||q||}, \textrm{ where } s \in [-1, 1] $$ 
+
+### Words with Multiple Meanings
+Polysemes and homonyms are words that have more than one meaning (see this [wiki page](https://en.wikipedia.org/wiki/Polysemy) to learn more about the difference between polysemes and homonyms ). Find a word with *at least two different meanings* such that the top-10 most similar words (according to cosine similarity) contain related words from *both* meanings. For example, "leaves" has both "go_away" and "a_structure_of_a_plant" meaning in the top 10, and "scoop" has both "handed_waffle_cone" and "lowdown". I think I have to try several polysemous or homonymic words before I find one. 
+
+I am also going to state the word I discover and the multiple meanings that occur in the top 10.
+
+**Note**: I am using the `wv_from_bin.most_similar(word)` function to get the top 10 similar words. This function ranks all other words in the vocabulary with respect to their cosine similarity to the given word. For further assistance, please check the __[GenSim documentation](https://radimrehurek.com/gensim/models/keyedvectors.html#gensim.models.keyedvectors.FastTextKeyedVectors.most_similar)__.
+
+```python
+    # ------------------
+    # Writing my implementation here.
+    print(wv_from_bin.most_similar(["woman"]))
+    print('-------------')
+    print(wv_from_bin.most_similar(['king']))
+    print('-------------')
+    print(wv_from_bin.most_similar(['queue']))
+    print('-------------')
+    print(wv_from_bin.most_similar(['woman', 'king', 'queue']))
+
+
+    # ------------------
+```
+```python
+[('man', 0.7664012908935547), ('girl', 0.7494640946388245), ('teenage_girl', 0.7336829900741577), ('teenager', 0.631708562374115), ('lady', 0.6288785934448242), ('teenaged_girl', 0.614178478717804), ('mother', 0.6076306104660034), ('policewoman', 0.6069462299346924), ('boy', 0.5975908637046814), ('Woman', 0.5770983099937439)]
+-------------
+[('kings', 0.7138045430183411), ('queen', 0.6510957479476929), ('monarch', 0.6413194537162781), ('crown_prince', 0.6204220056533813), ('prince', 0.6159993410110474), ('sultan', 0.5864824056625366), ('ruler', 0.5797566771507263), ('princes', 0.5646551847457886), ('Prince_Paras', 0.5432944297790527), ('throne', 0.5422105193138123)]
+-------------
+[('queues', 0.7822983860969543), ('queuing', 0.7479887008666992), ('queued', 0.656925618648529), ('Queues', 0.6135598421096802), ('snaking_queue', 0.61094069480896), ('snaking_queues', 0.5706708431243896), ('serpentine_queues', 0.5586966872215271), ('queing', 0.5505384206771851), ('serpentine_queue', 0.5351817607879639), ('Queue', 0.5160154700279236)]
+-------------
+[('man', 0.5752461552619934), ('queen', 0.543359100818634), ('prince', 0.5224438905715942), ('monarch', 0.5148977637290955), ('princess', 0.5129660964012146), ('lady', 0.5018671154975891), ('girl', 0.5011837482452393), ('wellwisher', 0.5011758804321289), ('deposed_monarch', 0.4940492510795593), ('befits_newly_minted', 0.48958051204681396)]
+```
+
+Why do you think many of the polysemous or homonymic words you tried didn't work (i.e. the top-10 most similar words only contain one of the meanings of the words)?
+
+#### <font color="red">Write your answer here.</font>
+
+### Synonyms & Antonyms
+
+When considering Cosine Similarity, it's often more convenient to think of Cosine Distance, which is simply 1 - Cosine Similarity.
+
+So, I was thinking to find out three words $(w_1,w_2,w_3)$ where $w_1$ and $w_2$ are synonyms and $w_1$ and $w_3$ are antonyms, but Cosine Distance $(w_1,w_3) <$ Cosine Distance $(w_1,w_2)$. 
+
+As an example, $w_1$="happy" is closer to $w_3$="sad" than to $w_2$="cheerful". So, I have found a different example that satisfies the above.
+
+I am using the `wv_from_bin.distance(w1, w2)` function here in order to compute the cosine distance between two words. Please see the __[GenSim documentation](https://radimrehurek.com/gensim/models/keyedvectors.html#gensim.models.keyedvectors.FastTextKeyedVectors.distance)__ for further assistance.
+
+```python
+    # ------------------
+    # Writing my implementation here.
+    
+    w1 = "happy"
+    w2 = "cheerful"
+    w3 = "sad"
+    w1_w2_dist = wv_from_bin.distance(w1, w2)
+    w1_w3_dist = wv_from_bin.distance(w1, w3)
+    print("Synonyms {}, {} have cosine distance: {}".format(w1, w2, w1_w2_dist))
+    print("Antonyms {}, {} have cosine distance: {}".format(w1, w3, w1_w3_dist))
+
+
+    # ------------------
+```
+```python
+Synonyms happy, cheerful have cosine distance: 0.6162261664867401
+Antonyms happy, sad have cosine distance: 0.46453857421875
+```
+Once you have found your example, please give a possible explanation for why this counter-intuitive result may have happened.
+
+#### <font color="red">Write your answer here.</font>Once you have found your example, please give a possible explanation for why this counter-intuitive result may have happened.
+
+#### <font color="red">Write your answer here.</font>
+
+### Analogies with Word Vectors
+Word vectors have been shown to *sometimes* exhibit the ability to solve analogies. 
+
+As an example, for the analogy "man : king :: woman : x" (read: man is to king as woman is to x), what is x?
+
+In the cell below, I will show you how to use word vectors to find x using the `most_similar` function from the __[GenSim documentation](https://radimrehurek.com/gensim/models/keyedvectors.html#gensim.models.keyedvectors.KeyedVectors.most_similar)__. The function finds words that are most similar to the words in the `positive` list and most dissimilar from the words in the `negative` list (while omitting the input words, which are often the most similar; see [this paper](https://www.aclweb.org/anthology/N18-2039.pdf)). The answer to the analogy will have the highest cosine similarity (largest returned numerical value).
+
+```python
+# Run this cell to answer the analogy -- man : king :: woman : x
+pprint.pprint(wv_from_bin.most_similar(positive=['woman', 'king'], negative=['man']))
+```
+```python
+[('queen', 0.7118193507194519),
+ ('monarch', 0.6189674735069275),
+ ('princess', 0.5902431011199951),
+ ('crown_prince', 0.5499460697174072),
+ ('prince', 0.5377321243286133),
+ ('kings', 0.5236844420433044),
+ ('Queen_Consort', 0.5235945582389832),
+ ('queens', 0.518113374710083),
+ ('sultan', 0.5098593831062317),
+ ('monarchy', 0.5087411999702454)]
+```
+Let $m$, $k$, $w$, and $x$ denote the word vectors for `man`, `king`, `woman`, and the answer, respectively. Using **only** vectors $m$, $k$, $w$, and the vector arithmetic operators $+$ and $-$ in your answer, what is the expression in which we are maximizing cosine similarity with $x$?
+
+Hint: Recall that word vectors are simply multi-dimensional vectors that represent a word. It might help to draw out a 2D example using arbitrary locations of each vector. Where would `man` and `woman` lie in the coordinate plane relative to `king` and the answer?
+
+#### <font color="red">Write your answer here.</font>
+
