@@ -1,7 +1,8 @@
 # Exploring Word Vector
 Welcome to Exploring Word Vectors!
 
-Before you start, make sure you read the README.txt in the same directory as this notebook for important setup information. A lot of code is provided in this notebook:)
+A lot of code is provided in this notebook:)
+
 If you aren't super familiar with Python, Numpy, or Matplotlib, I recommend you check out the documentation for each package.
 ```python
 # All Import Statements Defined Here
