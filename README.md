@@ -773,3 +773,151 @@ Hint: Recall that word vectors are simply multi-dimensional vectors that represe
 
 #### <font color="red">Write your answer here.</font>
 
+
+### Finding Analogies
+
+Now, I am going to find an example of analogy that holds according to these vectors (i.e. the intended word is ranked top). In my solution I am stating the full analogy in the form x:y :: a:b.
+
+**Note:** You may have to try many analogies to find one that works!
+
+```python
+# ------------------
+    # Writing my implementation here.
+    pprint.pprint(wv_from_bin.most_similar(positive=['beijing', 'france'], negative=['paris']))
+
+    # ------------------
+```
+```python
+
+[('chinese', 0.4530370235443115),
+ ('guo', 0.43193575739860535),
+ ('europe', 0.4315633475780487),
+ ('usa', 0.4285203218460083),
+ ('poland', 0.4236215651035309),
+ ('glasgow', 0.42350995540618896),
+ ('korea', 0.4216044545173645),
+ ('uk', 0.4159420430660248),
+ ('li', 0.4129682183265686),
+ ('latin_america', 0.4125618636608124)]
+
+```
+### Incorrect Analogy
+
+Finding an example of analogy that does not hold according to these vectors. In my solution, I am statng the intended analogy in the form x:y :: a:b, and state the (incorrect) value of b according to the word vectors.
+
+```python
+# ------------------
+    # Writing my implementation here.
+    pprint.pprint(wv_from_bin.most_similar(positive=['defendant', 'teacher'], negative=['layer']))
+
+
+    # ------------------
+
+```
+
+```python
+
+[('Defendant', 0.5187432765960693),
+ ('Teacher', 0.5064147114753723),
+ ('defendent', 0.5020987391471863),
+ ('guidance_counselor', 0.4760936498641968),
+ ('Marcie_Rousseau', 0.4629786014556885),
+ ('homeroom_teacher', 0.4603940546512604),
+ ('Felcman', 0.4596148729324341),
+ ('Bauereiss', 0.4562240242958069),
+ ('Broscius', 0.4555884599685669),
+ ('probationer', 0.4533900320529938)]
+```
+
+### Guided Analysis of Bias in Word Vectors
+
+It's important to be cognizant of the biases (gender, race, sexual orientation etc.) implicit in our word embeddings. Bias can be dangerous because it can reinforce stereotypes through applications that employ these models.
+
+```python
+# Run this cell
+# Here `positive` indicates the list of words to be similar to and `negative` indicates the list of words to be
+# most dissimilar from.
+pprint.pprint(wv_from_bin.most_similar(positive=['woman', 'boss'], negative=['man']))
+# man: boss :: woman: ?
+print()
+pprint.pprint(wv_from_bin.most_similar(positive=['man', 'boss'], negative=['woman']))
+# woman: boss:: man: ?
+```
+```python
+ ('manageress', 0.49151360988616943),
+ ('exec', 0.459408164024353),
+ ('Manageress', 0.4559843838214874),
+ ('receptionist', 0.4474116563796997),
+ ('Jane_Danson', 0.44480544328689575),
+ ('Fiz_Jennie_McAlpine', 0.44275766611099243),
+ ('Coronation_Street_actress', 0.44275572896003723),
+ ('supremo', 0.4409853219985962),
+ ('coworker', 0.43986251950263977)]
+
+[('supremo', 0.6097398400306702),
+ ('MOTHERWELL_boss', 0.5489562153816223),
+ ('CARETAKER_boss', 0.5375303030014038),
+ ('Bully_Wee_boss', 0.5333974361419678),
+ ('YEOVIL_Town_boss', 0.5321705341339111),
+ ('head_honcho', 0.5281980037689209),
+ ('manager_Stan_Ternent', 0.525971531867981),
+ ('Viv_Busby', 0.5256164073944092),
+ ('striker_Gabby_Agbonlahor', 0.5250812768936157),
+ ('BARNSLEY_boss', 0.5238943696022034)]
+```
+
+### Independent Analysis of Bias in Word Vectors
+
+I am using the most_similar function to find another case where some bias is exhibited by the vectors.
+
+```python
+# ------------------
+#  Writing bias exploration code here.
+
+# woman: job:: man: ?
+pprint.pprint(wv_from_bin.most_similar(positive=['job', 'man'], negative=['woman']))
+print()
+
+# man: job:: woman: ?
+pprint.pprint(wv_from_bin.most_similar(positive=['job','woman'], negative=['man']))
+
+# ------------------# ------------------
+#  Writing bias exploration code here.
+
+# woman: job:: man: ?
+pprint.pprint(wv_from_bin.most_similar(positive=['job', 'man'], negative=['woman']))
+print()
+
+# man: job:: woman: ?
+pprint.pprint(wv_from_bin.most_similar(positive=['job','woman'], negative=['man']))
+
+# ------------------
+```
+
+```python
+[('Job', 0.49606961011886597),
+ ('BrokeAss_Blog_Need', 0.4681640863418579),
+ ('jobs', 0.46551480889320374),
+ ("Mike'sa", 0.4402274191379547),
+ ('guy', 0.4276140034198761),
+ ('daunting_Platoni', 0.41128668189048767),
+ ('monster.com', 0.41067075729370117),
+ ('work', 0.4065277874469757),
+ ('strongside_LB', 0.39517009258270264),
+ ('managership', 0.3943490982055664)]
+
+[('jobs', 0.573985755443573),
+ ('maternity_leave', 0.4692857563495636),
+ ('secretarial', 0.46720582246780396),
+ ('employment', 0.46512290835380554),
+ ('waitressing', 0.4629189372062683),
+ ('internship', 0.4554218351840973),
+ ('DEAR_CARRIE', 0.45531150698661804),
+ ('BrokeAss_Blog_Need', 0.4549606740474701),
+ ('Job', 0.4385932981967926),
+ ('work', 0.4380896985530853)]
+```
+
+### Thinking About Bias
+
+Explanation of how bias gets into the word vectors. What is an experiment that you could do to test for or to measure this source of bias?
