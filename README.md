@@ -2,46 +2,10 @@
 
 Welcome to Exploring Word Vectors! 
 
-Before you start, make sure you read the README.txt in the same directory as this notebook for important setup information. A lot of code is provided in this notebook :)
+Before you start, make sure you read this README.md for important setup information. A lot of code is provided in this notebook :)
 
 If you aren't super familiar with Python, Numpy, or Matplotlib, I recommend you check out the documentation for each package.
 
-
-```python
-# All Import Statements Defined Here
-
-
-import sys
-assert sys.version_info[0]==3
-assert sys.version_info[1] >= 5
-
-from gensim.models import KeyedVectors
-from gensim.test.utils import datapath
-import pprint
-import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize'] = [10, 5]
-import nltk
-nltk.download('reuters')
-from nltk.corpus import reuters
-import numpy as np
-import random
-import scipy as sp
-from sklearn.decomposition import TruncatedSVD
-from sklearn.decomposition import PCA
-import itertools
-
-START_TOKEN = '<START>'
-END_TOKEN = '<END>'
-
-np.random.seed(0)
-random.seed(0)
-
-```
-
-      warnings.warn(msg)
-    [nltk_data] Downloading package reuters to
-    [nltk_data]     /Users/rajeshidumalla/nltk_data...
-    [nltk_data]   Package reuters is already up-to-date!
 
 
 ## Word Vectors
@@ -90,7 +54,44 @@ The rows (or columns) of this matrix provide one type of word vectors (those bas
 
 This reduced-dimensionality co-occurrence representation preserves semantic relationships between words, e.g. *doctor* and *hospital* will be closer than *doctor* and *dog*. 
 
+### Let's import all required libraries and Data
 
+```python
+# All Import Statements Defined Here
+
+
+import sys
+assert sys.version_info[0]==3
+assert sys.version_info[1] >= 5
+
+from gensim.models import KeyedVectors
+from gensim.test.utils import datapath
+import pprint
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize'] = [10, 5]
+import nltk
+nltk.download('reuters')
+from nltk.corpus import reuters
+import numpy as np
+import random
+import scipy as sp
+from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import PCA
+import itertools
+
+START_TOKEN = '<START>'
+END_TOKEN = '<END>'
+
+np.random.seed(0)
+random.seed(0)
+```
+
+```python
+  warnings.warn(msg)
+[nltk_data] Downloading package reuters to
+[nltk_data]     /Users/rajeshidumalla/nltk_data...
+[nltk_data]   Package reuters is already up-to-date!
+```
 
 ### Plotting Co-Occurrence Word Embeddings
 
@@ -315,7 +316,7 @@ print ("-" * 80)
 
 ### Implementing `compute_co_occurrence_matrix`
 
-I am writing a method that constructs a co-occurrence matrix for a certain window-size $n$ (with a default of 4), considering words $n$ before and $n$ after the word in the center of the window. Here, I start to use `numpy (np)` to represent vectors, matrices, and tensors. If you're not familiar with NumPy, please check out the documention on online.
+I am writing a method that constructs a co-occurrence matrix for a certain window-size $n$ (with a default of 4), considering words $n$ before and $n$ after the word in the center of the window. Here, I start to use `numpy (np)` to represent vectors, matrices, and tensors.
 
 
 
@@ -557,7 +558,7 @@ print ("-" * 80)
 Now I will put together all the parts that I have written! I will compute the co-occurrence matrix with fixed window of 4 (the default window size), over the Reuters "crude" (oil) corpus. Then I will use TruncatedSVD to compute 2-dimensional embeddings of each word. TruncatedSVD returns U\*S, so we need to normalize the returned vectors, so that all the vectors will appear around the unit circle (therefore closeness is directional closeness). **Note**: The line of code below that does the normalizing uses the NumPy concept of *broadcasting*. If you don't know about broadcasting, check out
 [Computation on Arrays: Broadcasting by Jake VanderPlas](https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html).
 
-Run the below cell to produce the plot. It'll probably take a few seconds to run. If you aren't super familiar with Python, Numpy, or Matplotlib, I recommend you check out the documentation for each package.
+Run the below cell to produce the plot. It'll probably take a few seconds to run.
 
 
 ```python
