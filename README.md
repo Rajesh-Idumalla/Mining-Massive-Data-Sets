@@ -589,8 +589,6 @@ plot_embeddings(M_normalized, word2ind_co_occurrence, words)
     
 
 
-#### <font color="red">Write your answer here.</font>
-
 
 ## Part 2: Prediction-Based Word Vectors
 
@@ -728,7 +726,6 @@ plot_embeddings(M_reduced_normalized, word2ind, words)
     
 
 
-#### <font color="red">  What clusters together in 2-dimensional embedding space? What doesn't cluster together that you think should have? How is the plot different from the one generated earlier from the co-occurrence matrix? What is a possible cause for the difference? Write your answer here.</font>
 
 ### Cosine Similarity
 Now that we have word vectors, we need a way to quantify the similarity between individual words, according to these vectors. One such metric is cosine-similarity. I will be using this to find words that are "close" and "far" from one another.
@@ -772,8 +769,6 @@ Polysemes and homonyms are words that have more than one meaning (see this [wiki
     [('man', 0.5752461552619934), ('queen', 0.543359100818634), ('prince', 0.5224438905715942), ('monarch', 0.5148977637290955), ('princess', 0.5129660964012146), ('lady', 0.5018671154975891), ('girl', 0.5011837482452393), ('wellwisher', 0.5011758804321289), ('deposed_monarch', 0.4940492510795593), ('befits_newly_minted', 0.48958051204681396)]
 
 
-#### <font color="red"> Please state the word you discover and the multiple meanings that occur in the top 10. Why do you think many of the polysemous or homonymic words you tried didn't work (i.e. the top-10 most similar words only contain **one** of the meanings of the words)?. Write your answer here.</font>
-
 ### Synonyms & Antonyms 
 
 When considering Cosine Similarity, it's often more convenient to think of Cosine Distance, which is simply 1 - Cosine Similarity.
@@ -805,7 +800,6 @@ For this, I am going to use the the `wv_from_bin.distance(w1, w2)` function here
     Antonyms happy, sad have cosine distance: 0.46453857421875
 
 
-#### Write your answer here.</font>
 
 ### Analogies with Word Vectors
 Word vectors have been shown to *sometimes* exhibit the ability to solve analogies. 
@@ -836,7 +830,6 @@ Let $m$, $k$, $w$, and $x$ denote the word vectors for `man`, `king`, `woman`, a
 
  If you recall that word vectors are simply multi-dimensional vectors that represent a word. It might help to draw out a 2D example using arbitrary locations of each vector.
 
-#### <font color="red">Where would `man` and `woman` lie in the coordinate plane relative to `king` and the answer? Write your answer here.</font>
 
 ### Finding Analogies
 Now, I am going to find an example of analogy that holds according to these vectors (i.e. the intended word is ranked top). In  my solution I am stating the full analogy in the form x:y :: a:b.
@@ -864,7 +857,6 @@ Now, I am going to find an example of analogy that holds according to these vect
      ('latin_america', 0.4125618636608124)]
 
 
-#### <font color="red">Write your answer here.</font>
 
 ### Incorrect Analogy
 Finding an example of analogy that does *not* hold according to these vectors. In my solution, I am statng the intended analogy in the form x:y :: a:b, and state the (incorrect) value of b according to the word vectors.
@@ -891,7 +883,6 @@ Finding an example of analogy that does *not* hold according to these vectors. I
      ('probationer', 0.4533900320529938)]
 
 
-#### <font color="red">statng the intended analogy in the form x:y :: a:b, and state the (incorrect) value of b according to the word vectors. Write your answer here.</font>
 
 ### Guided Analysis of Bias in Word Vectors
 
@@ -934,8 +925,6 @@ pprint.pprint(wv_from_bin.most_similar(positive=['man', 'boss'], negative=['woma
      ('BARNSLEY_boss', 0.5238943696022034)]
 
 
-#### <font color="red">Run the cell below, to examine (a) which terms are most similar to "woman" and "worker" and most dissimilar to "man", and (b) which terms are most similar to "man" and "worker" and most dissimilar to "woman". Point out the difference between the list of female-associated words and the list of male-associated words, and explain how it is reflecting gender bias. Write your answer here.</font>
-
 ### Independent Analysis of Bias in Word Vectors
 
 I am using the `most_similar` function to find another case where some bias is exhibited by the vectors.
@@ -976,12 +965,3 @@ pprint.pprint(wv_from_bin.most_similar(positive=['job','woman'], negative=['man'
      ('BrokeAss_Blog_Need', 0.4549606740474701),
      ('Job', 0.4385932981967926),
      ('work', 0.4380896985530853)]
-
-
-#### <font color="red"> Please briefly explain the example of bias that you discover. Write your answer here.</font>
-
-### Thinking About Bias [written]
-
-Explanation of how bias gets into the word vectors. What is an experiment that you could do to test for or to measure this source of bias?
-
-#### <font color="red">Write your answer here.</font>
